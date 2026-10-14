@@ -1,0 +1,90 @@
+<nav id="sidebar">
+
+  <!-- Brand Header (fixed at top) -->
+  <div class="brand">
+    <h5><i class="bi bi-building me-2"></i>Smart Mall</h5>
+    <small>{{ user.get_full_name }}</small><br>
+    <span class="badge mt-1" style="background:rgba(240,165,0,.2);color:#f0a500;font-size:11px;">
+      {% if user.role == 'SUPER_ADMIN' %}Super Admin
+      {% elif user.role == 'MANAGER' %}Manager
+      {% elif user.role == 'FINANCE' %}Finance Officer
+      {% elif user.role == 'TENANT' %}Tenant
+      {% else %}{{ user.role }}{% endif %}
+    </span>
+  </div>
+
+  <!-- Scrollable Nav Area -->
+  <div id="sidebar-nav" class="nav flex-column nav-pills mt-2 pb-4">
+
+    <div class="nav-label">Main</div>
+    <a href="{% url 'dashboard:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+
+    {% if user.role == 'SUPER_ADMIN' %}
+    <div class="nav-label">Administration</div>
+    <a href="{% url 'malls:mall_list' %}" class="nav-link"><i class="bi bi-building"></i> Malls</a>
+    <a href="{% url 'malls:shop_list' %}" class="nav-link"><i class="bi bi-shop"></i> Shops</a>
+    <a href="{% url 'accounts:user_list' %}" class="nav-link"><i class="bi bi-people"></i> Users</a>
+    {% endif %}
+
+    {% if user.role == 'MANAGER' or user.role == 'SUPER_ADMIN' %}
+    <div class="nav-label">Management</div>
+    <a href="{% url 'tenants:tenant_list' %}" class="nav-link"><i class="bi bi-person-badge"></i> Tenants</a>
+    <a href="{% url 'leases:lease_list' %}" class="nav-link"><i class="bi bi-file-text"></i> Leases</a>
+    <a href="{% url 'malls:shop_list' %}" class="nav-link"><i class="bi bi-shop"></i> Shops</a>
+    <a href="{% url 'invoices:invoice_list' %}" class="nav-link"><i class="bi bi-receipt"></i> Invoices</a>
+    <a href="{% url 'payments:payment_list' %}" class="nav-link"><i class="bi bi-cash-stack"></i> Payments</a>
+    <a href="{% url 'complaints:complaint_list' %}" class="nav-link"><i class="bi bi-chat-left-text"></i> Complaints</a>
+    <a href="{% url 'maintenance:request_list' %}" class="nav-link"><i class="bi bi-tools"></i> Maintenance</a>
+    {% endif %}
+
+    {% if user.role == 'FINANCE' %}
+    <div class="nav-label">Finance</div>
+    <a href="{% url 'invoices:invoice_list' %}" class="nav-link"><i class="bi bi-receipt"></i> Invoices</a>
+    <a href="{% url 'payments:payment_list' %}" class="nav-link"><i class="bi bi-cash-stack"></i> Payments</a>
+    <a href="{% url 'complaints:complaint_list' %}" class="nav-link"><i class="bi bi-chat-left-text"></i> Complaints</a>
+    {% endif %}
+
+    {% if user.role == 'TENANT' %}
+    <div class="nav-label">My Account</div>
+    <a href="{% url 'invoices:my_invoices' %}" class="nav-link"><i class="bi bi-receipt"></i> My Invoices</a>
+    <a href="{% url 'payments:my_payments' %}" class="nav-link"><i class="bi bi-cash-stack"></i> My Payments</a>
+    <a href="{% url 'complaints:my_complaints' %}" class="nav-link"><i class="bi bi-chat-left-text"></i> Complaints</a>
+    <a href="{% url 'maintenance:my_requests' %}" class="nav-link"><i class="bi bi-tools"></i> Maintenance</a>
+    {% endif %}
+
+    {% if user.role != 'TENANT' %}
+    <div class="nav-label">Analytics</div>
+    <a href="{% url 'dashboard:reports' %}" class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+      <i class="bi bi-bar-chart-line"></i> Reports
+    </a>
+    {% endif %}
+
+    <div class="nav-label">Account</div>
+    <a href="{% url 'accounts:change_password' %}" class="nav-link">
+      <i class="bi bi-key"></i> Change Password
+    </a>
+    <a href="{% url 'accounts:change_email' %}" class="nav-link">
+      <i class="bi bi-envelope"></i> Change Email
+    </a>
+    <form method="post" action="{% url 'accounts:logout' %}" class="mx-2 mt-1 mb-3">
+      {% csrf_token %}
+      <button type="submit" class="btn w-100 text-start nav-link"
+              style="background:none;border:none;color:rgba(255,100,100,.8);">
+        <i class="bi bi-box-arrow-left"></i> Logout
+      </button>
+    </form>
+
+  </div><!-- end #sidebar-nav -->
+
+  <!-- Scroll Down indicator — only shows when content is below -->
+  <div id="scroll-indicator"
+       style="display:none; position:absolute; bottom:0; left:0; right:0;
+              background:linear-gradient(transparent, rgba(0,0,0,0.4));
+              text-align:center; padding:8px 0; cursor:pointer;
+              pointer-events:auto;">
+    <i class="bi bi-chevron-double-down text-white" style="font-size:18px;"></i>
+  </div>
+
+</nav>

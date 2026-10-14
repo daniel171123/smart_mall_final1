@@ -1,0 +1,66 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}{{ tenant.business_name }}{% endblock %}
+{% block page_title %}Tenant Detail{% endblock %}
+{% block dashboard_content %}
+<div class="row g-3">
+  <div class="col-12 col-lg-4">
+    <div class="table-card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-person-badge me-2"></i>Tenant Info</span>
+        <div class="d-flex gap-1">
+          <a href="{% url 'tenants:tenant_edit' tenant.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+          <a href="{% url 'tenants:tenant_delete' tenant.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+        </div>
+      </div>
+      <div class="card-body p-3">
+        <p class="mb-1"><strong>Business:</strong> {{ tenant.business_name }}</p>
+        <p class="mb-1"><strong>Type:</strong> {{ tenant.business_type }}</p>
+        <p class="mb-1"><strong>Owner:</strong> {{ tenant.user.get_full_name }}</p>
+        <p class="mb-1"><strong>Email:</strong> {{ tenant.user.email }}</p>
+        <p class="mb-1"><strong>Phone:</strong> {{ tenant.user.phone_number|default:"—" }}</p>
+        <p class="mb-1"><strong>TIN:</strong> {{ tenant.tin_number|default:"—" }}</p>
+        <p class="mb-1"><strong>Status:</strong>
+          {% if tenant.user.is_active %}<span class="badge badge-paid">Active</span>{% else %}<span class="badge badge-overdue">Inactive</span>{% endif %}
+        </p>
+        <p class="mb-0"><strong>Created:</strong> {{ tenant.created_at|date:"M d, Y" }}</p>
+      </div>
+    </div>
+    {% if lease %}
+    <div class="table-card">
+      <div class="card-header"><i class="bi bi-file-text me-2"></i>Active Lease</div>
+      <div class="card-body p-3">
+        <p class="mb-1"><strong>Shop:</strong> {{ lease.shop.shop_number }} — {{ lease.shop.mall.name }}</p>
+        <p class="mb-1"><strong>Monthly Rent:</strong> ETB {{ lease.monthly_rent }}</p>
+        <p class="mb-1"><strong>Start:</strong> {{ lease.start_date }}</p>
+        <p class="mb-0"><strong>End:</strong> {{ lease.end_date }}
+          {% if lease.is_expiring_soon %}<span class="badge bg-warning text-dark ms-1">Expiring Soon</span>{% endif %}
+        </p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="col-12 col-lg-8">
+    <div class="table-card">
+      <div class="card-header"><i class="bi bi-receipt me-2"></i>Invoice History</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>Invoice #</th><th>Period</th><th>Amount</th><th>Due</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for inv in invoices %}
+            <tr>
+              <td><a href="{% url 'invoices:invoice_detail' inv.pk %}">{{ inv.invoice_number }}</a></td>
+              <td class="small text-muted">{{ inv.period_start|date:"M Y" }}</td>
+              <td>ETB {{ inv.total_amount }}</td>
+              <td>{{ inv.due_date }}</td>
+              <td><span class="badge badge-{{ inv.status|lower }}">{{ inv.status }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-4">No invoices yet</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

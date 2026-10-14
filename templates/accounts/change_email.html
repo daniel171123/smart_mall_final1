@@ -1,0 +1,25 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}Change Email{% endblock %}
+{% block page_title %}Change Email{% endblock %}
+{% block dashboard_content %}
+<div class="row justify-content-center"><div class="col-12 col-lg-5">
+<div class="table-card"><div class="card-header"><i class="bi bi-envelope me-2"></i>Change Email Address</div>
+<div class="card-body p-4">
+<div class="alert alert-warning mb-4"><i class="bi bi-exclamation-triangle me-2"></i>Your email is your login credential. After changing it, use the new email to sign in.</div>
+<p class="text-muted small mb-4">Current email: <strong>{{ user.email }}</strong></p>
+<form method="post" novalidate>{% csrf_token %}
+{% for field in form %}
+<div class="mb-3">
+  <label class="form-label fw-semibold">{{ field.label }}</label>
+  {{ field }}
+  {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors.0 }}</div>{% endif %}
+</div>
+{% endfor %}
+<div class="d-flex gap-2 mt-4">
+  <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-2"></i>Update Email</button>
+  <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary">Cancel</a>
+</div>
+</form>
+</div></div>
+</div></div>
+{% endblock %}

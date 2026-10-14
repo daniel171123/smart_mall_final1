@@ -1,0 +1,49 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}Shops{% endblock %}
+{% block page_title %}Shops{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="d-flex gap-2">
+    <select class="form-select form-select-sm" style="width:auto;" onchange="window.location.href='?mall='+this.value">
+      <option value="">All Malls</option>
+      {% for m in malls %}<option value="{{ m.pk }}" {% if selected_mall == m.pk|stringformat:'s' %}selected{% endif %}>{{ m.name }}</option>{% endfor %}
+    </select>
+    <select class="form-select form-select-sm" style="width:auto;" onchange="window.location.href='?status='+this.value">
+      <option value="">All Status</option>
+      <option value="VACANT">Vacant</option>
+      <option value="OCCUPIED">Occupied</option>
+      <option value="UNDER_MAINTENANCE">Under Maintenance</option>
+    </select>
+  </div>
+  <a href="{% url 'malls:shop_create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i>Add Shop</a>
+</div>
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Shop #</th><th>Mall</th><th>Floor</th><th>Type</th><th>Size</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for shop in shops %}
+        <tr>
+          <td class="fw-semibold">{{ shop.shop_number }}</td>
+          <td>{{ shop.mall.name }}</td>
+          <td>{{ shop.floor }}</td>
+          <td>{{ shop.shop_type }}</td>
+          <td>{{ shop.size_sqm }} m²</td>
+          <td>
+            {% if shop.status == 'OCCUPIED' %}<span class="badge badge-active">Occupied</span>
+            {% elif shop.status == 'VACANT' %}<span class="badge badge-expired">Vacant</span>
+            {% else %}<span class="badge badge-unpaid">Maintenance</span>{% endif %}
+          </td>
+          <td class="d-flex gap-1">
+            <a href="{% url 'malls:shop_edit' shop.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+            <a href="{% url 'malls:shop_delete' shop.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No shops found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

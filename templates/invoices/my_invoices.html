@@ -1,0 +1,106 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}My Invoices{% endblock %}
+{% block page_title %}My Invoices{% endblock %}
+{% block dashboard_content %}
+<div class="table-card">
+  <div class="card-header">
+    <i class="bi bi-receipt me-2"></i>My Invoices
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Invoice #</th>
+          <th>Period</th>
+          <th>Rent</th>
+          <th>Maintenance</th>
+          <th>Penalty</th>
+          <th>Total</th>
+          <th>Due</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr>
+          <td class="fw-semibold">
+            {{ inv.invoice_number }}
+          </td>
+          <td class="small text-muted">
+            {{ inv.period_start|date:"M d" }} —
+            {{ inv.period_end|date:"M d, Y" }}
+          </td>
+          <td>ETB {{ inv.base_rent }}</td>
+          <td>ETB {{ inv.maintenance_fee }}</td>
+          <td>
+            {% if inv.penalty_amount > 0 %}
+            <span class="text-danger fw-bold">
+              ETB {{ inv.penalty_amount }}
+            </span>
+            {% else %}
+            <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td class="fw-bold">ETB {{ inv.total_amount }}</td>
+          <td>{{ inv.due_date }}</td>
+          <td>
+            <span class="badge badge-{{ inv.status|lower }}">
+              {{ inv.status }}
+            </span>
+          </td>
+          <td>
+            {% if inv.status == 'PAID' %}
+            <span class="text-success">
+              <i class="bi bi-check-circle"></i>
+            </span>
+            {% else %}
+              {% try %}{% endtry %}
+              {% with pay=inv.payment %}
+                {% if pay.status == 'PENDING_VERIFICATION' %}
+                <span class="badge bg-warning text-dark small">
+                  Awaiting Verification
+                </span>
+                {% elif pay.status == 'REJECTED' %}
+                <div>
+                  <span class="badge bg-danger small mb-1">
+                    Rejected
+                  </span>
+                  {% if pay.rejection_reason %}
+                  <div class="small text-danger">
+                    {{ pay.rejection_reason|truncatewords:8 }}
+                  </div>
+                  {% endif %}
+                  <a href="{% url 'payments:submit_payment' inv.pk %}"
+                     class="btn btn-xs btn-sm btn-warning mt-1">
+                    Resubmit
+                  </a>
+                </div>
+                {% else %}
+                <a href="{% url 'payments:submit_payment' inv.pk %}"
+                   class="btn btn-sm btn-primary">
+                  Pay Now
+                </a>
+                {% endif %}
+              {% empty %}
+              <a href="{% url 'payments:submit_payment' inv.pk %}"
+                 class="btn btn-sm btn-primary">
+                Pay Now
+              </a>
+              {% endwith %}
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9"
+              class="text-center text-muted py-4">
+            No invoices yet.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

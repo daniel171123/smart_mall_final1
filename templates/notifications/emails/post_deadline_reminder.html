@@ -1,0 +1,54 @@
+{% extends 'notifications/emails/base_email.html' %}
+{% block email_body %}
+<p class="greeting">
+    Dear <strong>{{ tenant.user.get_full_name }}</strong>,
+</p>
+<p>Your invoice <strong>{{ invoice.invoice_number }}</strong>
+   is now <strong>{{ days_overdue }} days overdue</strong>.
+   A daily penalty of 1% of your monthly rent is being
+   applied until full payment is received.</p>
+
+<div class="breakdown-box">
+    <h4>📄 Updated Invoice — {{ invoice.invoice_number }}</h4>
+    <div class="breakdown-row">
+        <span>Shop</span>
+        <span>Shop {{ shop.shop_number }}, {{ mall.name }}</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Period</span>
+        <span>{{ period_start }} to {{ period_end }}</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Base Rent (3 months)</span>
+        <span>ETB {{ base_rent }}</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Maintenance Fee</span>
+        <span>ETB {{ maintenance_fee }}</span>
+    </div>
+    {% if penalty_amount > 0 %}
+    <div class="breakdown-row penalty-row">
+        <span>⚠️ Late Penalty ({{ days_overdue }} days
+              × 1% of monthly rent)</span>
+        <span>ETB {{ penalty_amount }}</span>
+    </div>
+    {% endif %}
+    {% if other_charges > 0 %}
+    <div class="breakdown-row">
+        <span>Other Charges</span>
+        <span>ETB {{ other_charges }}</span>
+    </div>
+    {% endif %}
+    <div class="breakdown-row total">
+        <span>Total Amount Due NOW</span>
+        <span>ETB {{ total_amount }}</span>
+    </div>
+</div>
+
+<div class="alert-box alert-danger">
+    🚨 Your account is <strong>{{ days_overdue }} days
+    overdue</strong>. Penalty increases by
+    ETB {{ invoice.lease.monthly_rent|floatformat:2 }} × 1%
+    every day. Pay immediately to stop accumulation.
+</div>
+{% endblock %}

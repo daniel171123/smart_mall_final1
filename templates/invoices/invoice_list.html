@@ -1,0 +1,39 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}Invoices{% endblock %}
+{% block page_title %}Invoices{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="d-flex gap-2">
+    <select class="form-select form-select-sm" style="width:auto;" onchange="window.location.href='?status='+this.value">
+      <option value="">All Status</option>
+      <option value="UNPAID" {% if selected_status == 'UNPAID' %}selected{% endif %}>Unpaid</option>
+      <option value="OVERDUE" {% if selected_status == 'OVERDUE' %}selected{% endif %}>Overdue</option>
+      <option value="PAID" {% if selected_status == 'PAID' %}selected{% endif %}>Paid</option>
+    </select>
+  </div>
+  <a href="{% url 'invoices:invoice_create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i>Manual Invoice</a>
+</div>
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Invoice #</th><th>Tenant</th><th>Shop</th><th>Base Rent</th><th>Penalty</th><th>Total</th><th>Due</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr>
+          <td><a href="{% url 'invoices:invoice_detail' inv.pk %}" class="fw-semibold text-primary">{{ inv.invoice_number }}</a></td>
+          <td>{{ inv.lease.tenant.business_name }}</td>
+          <td>{{ inv.lease.shop.shop_number }}</td>
+          <td>ETB {{ inv.base_rent }}</td>
+          <td>{% if inv.penalty_amount > 0 %}<span class="text-danger">ETB {{ inv.penalty_amount }}</span>{% else %}—{% endif %}</td>
+          <td class="fw-bold">ETB {{ inv.total_amount }}</td>
+          <td>{{ inv.due_date }}</td>
+          <td><span class="badge badge-{{ inv.status|lower }}">{{ inv.status }}</span></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No invoices found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

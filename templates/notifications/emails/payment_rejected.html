@@ -1,0 +1,35 @@
+{% extends 'notifications/emails/base_email.html' %}
+{% block email_body %}
+<p class="greeting">
+    Dear <strong>{{ tenant.user.get_full_name }}</strong>,
+</p>
+
+<div class="alert-box alert-danger">
+    ❌ Your payment submission for invoice
+    <strong>{{ invoice.invoice_number }}</strong>
+    has been rejected.
+</div>
+
+<div class="breakdown-box">
+    <h4>Rejection Details</h4>
+    <div class="breakdown-row">
+        <span>Invoice Number</span>
+        <span>{{ invoice.invoice_number }}</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Amount</span>
+        <span>ETB {{ total_amount }}</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Reason for Rejection</span>
+        <span>{{ payment.rejection_reason }}</span>
+    </div>
+</div>
+
+<div class="alert-box alert-warning">
+    ⚠️ Please log in to your portal, review the reason
+    above, and resubmit your payment proof.
+    Note: penalty continues to accumulate until
+    payment is verified.
+</div>
+{% endblock %}

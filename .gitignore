@@ -1,0 +1,19 @@
+# Environment
+.env
+venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Media files
+media/
+backups/
+
+# IDE
+.vscode/
+.idea/

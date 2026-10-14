@@ -1,0 +1,172 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}{{ invoice.invoice_number }}{% endblock %}
+{% block page_title %}Invoice Detail{% endblock %}
+{% block dashboard_content %}
+<div class="row g-3">
+  <div class="col-12 col-lg-5">
+    <div class="table-card mb-3">
+      <div class="card-header d-flex
+                  justify-content-between align-items-center">
+        <span>
+          <i class="bi bi-receipt me-2"></i>
+          {{ invoice.invoice_number }}
+        </span>
+        {% if user.role in 'SUPER_ADMIN,MANAGER' and invoice.status != 'PAID' %}
+        <a href="{% url 'invoices:invoice_delete' invoice.pk %}"
+           class="btn btn-sm btn-outline-danger"
+           title="Delete Invoice">
+          <i class="bi bi-trash"></i>
+        </a>
+        {% endif %}
+      </div>
+      <div class="card-body p-3">
+        <p class="mb-1">
+          <strong>Tenant:</strong>
+          {{ invoice.lease.tenant.business_name }}
+        </p>
+        <p class="mb-1">
+          <strong>Shop:</strong>
+          {{ invoice.lease.shop.shop_number }} —
+          {{ invoice.lease.shop.mall.name }}
+        </p>
+        <p class="mb-1">
+          <strong>Period:</strong>
+          {{ invoice.period_start }} to
+          {{ invoice.period_end }}
+        </p>
+        <p class="mb-1">
+          <strong>Issue Date:</strong>
+          {{ invoice.issue_date }}
+        </p>
+        <p class="mb-1">
+          <strong>Due Date:</strong>
+          {{ invoice.due_date }}
+        </p>
+        <hr>
+        <p class="mb-1">
+          <strong>Base Rent (3 months):</strong>
+          ETB {{ invoice.base_rent }}
+        </p>
+        <p class="mb-1">
+          <strong>Maintenance Fee:</strong>
+          ETB {{ invoice.maintenance_fee }}
+        </p>
+        {% if invoice.penalty_amount > 0 %}
+        <p class="mb-1 text-danger">
+          <strong>
+            Penalty ({{ invoice.get_days_overdue }} days):
+          </strong>
+          ETB {{ invoice.penalty_amount }}
+        </p>
+        {% endif %}
+        {% if invoice.other_charges > 0 %}
+        <p class="mb-1">
+          <strong>Other Charges:</strong>
+          ETB {{ invoice.other_charges }}
+        </p>
+        {% endif %}
+        <hr>
+        <p class="mb-0 fs-5 fw-bold">
+          <strong>Total:</strong>
+          ETB {{ invoice.total_amount }}
+        </p>
+        <p class="mt-2">
+          <span class="badge badge-{{ invoice.status|lower }} fs-6">
+            {{ invoice.status }}
+          </span>
+        </p>
+      </div>
+    </div>
+
+    {% if payment %}
+    <div class="table-card">
+      <div class="card-header">
+        <i class="bi bi-cash-stack me-2"></i>Payment
+      </div>
+      <div class="card-body p-3">
+        <p class="mb-1">
+          <strong>Amount Paid:</strong>
+          ETB {{ payment.amount_paid }}
+        </p>
+        <p class="mb-1">
+          <strong>Method:</strong>
+          {{ payment.get_payment_method_display }}
+        </p>
+        <p class="mb-1">
+          <strong>Reference:</strong>
+          {{ payment.transaction_reference|default:"—" }}
+        </p>
+        <p class="mb-1">
+          <strong>Status:</strong>
+          {{ payment.status }}
+        </p>
+        {% if payment.rejection_reason %}
+        <div class="alert alert-danger py-2 mt-2 small">
+          <strong>Rejection Reason:</strong>
+          {{ payment.rejection_reason }}
+        </div>
+        {% endif %}
+        {% if payment.proof_of_payment %}
+        <a href="{{ payment.proof_of_payment.url }}"
+           target="_blank"
+           class="btn btn-sm btn-outline-primary mt-2">
+          <i class="bi bi-file-earmark me-1"></i>
+          View Proof
+        </a>
+        {% endif %}
+        {% if payment.status == 'PENDING_VERIFICATION' and user.role == 'FINANCE' %}
+        <a href="{% url 'payments:verify_payment' payment.pk %}"
+           class="btn btn-sm btn-primary mt-2">
+          Verify Payment
+        </a>
+        {% endif %}
+        {% if payment.status == 'VERIFIED' %}
+        <a href="{% url 'payments:download_receipt' payment.pk %}"
+           class="btn btn-sm btn-success mt-2">
+          <i class="bi bi-file-earmark-pdf me-1"></i>
+          Download Receipt
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-12 col-lg-7">
+    {% if logs %}
+    <div class="table-card">
+      <div class="card-header">
+        <i class="bi bi-clock-history me-2"></i>
+        Penalty Log
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Days Overdue</th>
+              <th>Daily Rate</th>
+              <th>Cumulative</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+            <tr>
+              <td>{{ log.date }}</td>
+              <td>{{ log.days_overdue }}</td>
+              <td class="text-danger">
+                ETB {{ log.daily_penalty_rate }}
+              </td>
+              <td class="text-danger fw-bold">
+                ETB {{ log.cumulative_penalty }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

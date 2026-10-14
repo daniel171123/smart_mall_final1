@@ -1,0 +1,584 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% include 'includes/sidebar.html' %}
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<div id="main">
+  <div class="topbar">
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm d-lg-none p-1"
+              onclick="toggleSidebar()"
+              style="border:none;background:none;">
+        <i class="bi bi-list"
+           style="font-size:26px;color:var(--primary);"></i>
+      </button>
+      <h6 class="page-title mb-0">
+        {% block page_title %}Dashboard{% endblock %}
+      </h6>
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+
+      <!-- Language toggle -->
+      <button onclick="toggleLang()"
+              id="lang-btn-auth"
+              class="btn btn-sm d-flex align-items-center gap-1"
+              style="background:rgba(26,60,94,.07);
+                     border:1px solid rgba(26,60,94,.18);
+                     border-radius:20px;padding:4px 14px;
+                     font-size:12px;font-weight:600;
+                     color:var(--primary);">
+        <i class="bi bi-translate"></i>
+        <span id="lang-label">አማርኛ</span>
+      </button>
+
+      <!-- Notification Bell -->
+      <div class="dropdown notif-bell">
+        <button class="btn btn-sm p-1 position-relative"
+                style="background:none;border:none;"
+                data-bs-toggle="dropdown"
+                data-bs-auto-close="outside"
+                onclick="markNotifsSeen()">
+          <i class="bi bi-bell"
+             style="font-size:20px;color:#555;"></i>
+          {% if unread_count > 0 %}
+          <span class="notif-badge">{{ unread_count }}</span>
+          {% endif %}
+        </button>
+        <div class="dropdown-menu dropdown-menu-end notif-dropdown p-0">
+          <div class="d-flex justify-content-between
+                      align-items-center px-3 py-2"
+               style="border-bottom:1px solid #f0f0f0;">
+            <span class="fw-bold" style="font-size:13px;">
+              Notifications
+            </span>
+          </div>
+          {% if recent_notifications %}
+            {% for notif in recent_notifications %}
+            <div class="notif-item">
+              <span class="notif-type
+                {% if notif.notification_type == 'POST_DEADLINE' %}bg-danger text-white
+                {% elif notif.notification_type == 'PRE_DEADLINE' %}bg-warning text-dark
+                {% elif notif.notification_type == 'PAYMENT_CONFIRMED' %}bg-success text-white
+                {% elif notif.notification_type == 'PAYMENT_REJECTED' %}bg-danger text-white
+                {% elif notif.notification_type == 'LEASE_EXPIRY' %}bg-warning text-dark
+                {% else %}bg-secondary text-white{% endif %}">
+                {{ notif.get_notification_type_display }}
+              </span>
+              <div class="notif-title mt-1">
+                {{ notif.subject|truncatechars:50 }}
+              </div>
+              <div class="notif-time mt-1">
+                {{ notif.created_at|date:"M d, Y H:i" }}
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+          <div class="text-center text-muted py-4"
+               style="font-size:13px;">
+            <i class="bi bi-bell-slash d-block mb-2"
+               style="font-size:24px;opacity:.4;"></i>
+            No notifications yet
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <span class="text-muted small d-none d-md-block">
+        {{ user.email }}
+      </span>
+      <div class="rounded-circle text-white
+                  d-flex align-items-center
+                  justify-content-center fw-bold flex-shrink-0"
+           style="width:34px;height:34px;
+                  background:var(--primary);font-size:13px;">
+        {{ user.first_name|first|upper }}
+      </div>
+    </div>
+  </div>
+
+  {% include 'includes/messages.html' %}
+
+  <div class="content-area fade-in">
+    {% block dashboard_content %}{% endblock %}
+  </div>
+</div>
+
+<button id="scroll-top-btn"
+        onclick="window.scrollTo({top:0,behavior:'smooth'})"
+        title="Back to top">
+  <i class="bi bi-arrow-up"></i>
+</button>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// SIDEBAR
+// ─────────────────────────────────────────────────────────────
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('show');
+  document.getElementById('sidebar-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('show');
+  document.getElementById('sidebar-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.contains('show')
+    ? closeSidebar() : openSidebar();
+}
+document.querySelectorAll('.sidebar-link').forEach(l => {
+  l.addEventListener('click', () => {
+    if (window.innerWidth < 992) closeSidebar();
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSidebar();
+});
+
+// ─────────────────────────────────────────────────────────────
+// SIDEBAR SCROLL INDICATOR
+// ─────────────────────────────────────────────────────────────
+const nav = document.getElementById('sidebar-nav');
+const ind = document.getElementById('scroll-indicator');
+function refreshInd() {
+  if (!nav || !ind) return;
+  ind.style.display =
+    (nav.scrollHeight - nav.scrollTop - nav.clientHeight) > 12
+      ? 'flex' : 'none';
+}
+if (nav) {
+  nav.addEventListener('scroll', refreshInd, {passive:true});
+  ['load','resize'].forEach(e =>
+    window.addEventListener(e, refreshInd));
+  setTimeout(refreshInd, 300);
+}
+if (ind) ind.addEventListener('click', () =>
+  nav.scrollBy({top:140, behavior:'smooth'}));
+
+// ─────────────────────────────────────────────────────────────
+// SCROLL TO TOP
+// ─────────────────────────────────────────────────────────────
+const topBtn = document.getElementById('scroll-top-btn');
+window.addEventListener('scroll', () => {
+  if (!topBtn) return;
+  topBtn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+}, {passive:true});
+
+// ─────────────────────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────────────────────
+function markNotifsSeen() {
+  fetch('/notifications/mark-seen/', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'Content-Type': 'application/json'
+    }
+  }).catch(() => {});
+  const badge = document.querySelector('.notif-badge');
+  if (badge) badge.remove();
+}
+
+// ─────────────────────────────────────────────────────────────
+// AUTO LOGOUT ON TAB CLOSE ONLY
+// ─────────────────────────────────────────────────────────────
+// WHY: We use Page Visibility API + sessionStorage.
+// When a page is hidden (tab switch or close), we
+// set a timestamp. If the page never becomes visible
+// again within the session, on next load we check
+// if the session is stale. This avoids false logouts
+// during normal navigation.
+//
+// Simpler reliable method: use sessionStorage flag.
+// On every page load, set "alive". On unload, only
+// beacon if the tab is actually being closed (not
+// navigating), detected by checking if the page
+// becomes hidden without a new page load following.
+
+sessionStorage.setItem('page_alive', '1');
+
+let isNavigating = false;
+
+// Set flag BEFORE any navigation starts
+document.addEventListener('click', function(e) {
+  const a = e.target.closest('a[href]');
+  if (a && !a.target &&
+      !a.href.startsWith('javascript') &&
+      a.href.startsWith(window.location.origin)) {
+    isNavigating = true;
+  }
+}, true);
+
+document.addEventListener('submit', function() {
+  isNavigating = true;
+}, true);
+
+// Handle browser back/forward
+window.addEventListener('popstate', function() {
+  isNavigating = true;
+});
+
+// Only logout on TRUE tab close
+// Use visibilitychange: if hidden AND not navigating
+// AND no new page loaded within 10s → real close
+let hiddenTimer = null;
+
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'hidden' &&
+      !isNavigating) {
+    // Give 10 seconds — if page not revisited, logout
+    hiddenTimer = setTimeout(function() {
+      navigator.sendBeacon(
+        '/accounts/logout-beacon/',
+        new URLSearchParams({
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        })
+      );
+    }, 10000);
+  } else if (document.visibilityState === 'visible') {
+    // Tab came back — cancel logout
+    if (hiddenTimer) {
+      clearTimeout(hiddenTimer);
+      hiddenTimer = null;
+    }
+    isNavigating = false;
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// AMHARIC TRANSLATION
+// ─────────────────────────────────────────────────────────────
+// WHY: We use a two-pass approach:
+// Pass 1 — store all original text node values
+// Pass 2 — replace with Amharic equivalents
+// This allows clean toggle back to English.
+// We sort dictionary keys longest-first so that
+// "Change Password" is matched before "Password".
+
+const dict = {
+  // ── Navigation ──────────────────────────────────
+  'Smart Mall': 'ስማርት ሞል',
+  'Super Admin': 'ዋና አስተዳዳሪ',
+  'Finance Officer': 'የፋይናንስ ኦፊሰር',
+  'Manager': 'ስራ አስኪያጅ',
+  'Tenant': 'ተከራይ',
+  'Dashboard': 'ዳሽቦርድ',
+  'Administration': 'አስተዳደር',
+  'Management': 'ማኔጅመንት',
+  'Analytics': 'ትንታኔ',
+  'Malls': 'ሞሎች',
+  'Shops': 'ሱቆች',
+  'Users': 'ተጠቃሚዎች',
+  'Tenants': 'ተከራዮች',
+  'Leases': 'ሊዝ ስምምነቶች',
+  'Invoices': 'ደረሰኞች',
+  'Payments': 'ክፍያዎች',
+  'Complaints': 'ቅሬታዎች',
+  'Maintenance': 'ጥገና',
+  'Reports': 'ሪፖርቶች',
+  'Change Password': 'የሚስጥር ቁጥር ቀይር',
+  'Change Email': 'ኢሜይል ቀይር',
+  'Logout': 'ውጣ',
+  'My Invoices': 'የኔ ደረሰኞች',
+  'My Payments': 'የኔ ክፍያዎች',
+  'My Account': 'የኔ መለያ',
+  // ── Dashboard labels ────────────────────────────
+  'Admin Dashboard': 'የአስተዳዳሪ ዳሽቦርድ',
+  'Manager Dashboard': 'የስራ አስኪያጅ ዳሽቦርድ',
+  'Finance Dashboard': 'የፋይናንስ ዳሽቦርድ',
+  'My Dashboard': 'የኔ ዳሽቦርድ',
+  'Total Malls': 'ጠቅላላ ሞሎች',
+  'Total Shops': 'ጠቅላላ ሱቆች',
+  'Overdue Invoices': 'ያለፈ ደረሰኞች',
+  'Pending Payments': 'በመጠባበቅ ያሉ ክፍያዎች',
+  'Active Leases': 'ንቁ ሊዝ ስምምነቶች',
+  'Expiring Soon': 'በቅርቡ ያልቃሉ',
+  'Open Complaints': 'ክፍት ቅሬታዎች',
+  'Recent Invoices': 'የቅርብ ጊዜ ደረሰኞች',
+  'Recent Payments': 'የቅርብ ጊዜ ክፍያዎች',
+  'View All': 'ሁሉንም ይመልከቱ',
+  'Overdue': 'ያለፈ',
+  // ── Status ──────────────────────────────────────
+  'UNPAID': 'ያልተከፈለ',
+  'PAID': 'ተከፍሏል',
+  'ACTIVE': 'ንቁ',
+  'EXPIRED': 'ያለቀ',
+  'TERMINATED': 'ተቋርጧል',
+  'VACANT': 'ባዶ',
+  'OCCUPIED': 'የተያዘ',
+  'Verified': 'ተረጋግጧል',
+  'Pending': 'በመጠባበቅ',
+  'Rejected': 'ተቀባይነት አላገኘም',
+  // ── Common actions ──────────────────────────────
+  'Add Mall': 'ሞል ጨምር',
+  'Add Shop': 'ሱቅ ጨምር',
+  'Add Tenant': 'ተከራይ ጨምር',
+  'Add User': 'ተጠቃሚ ጨምር',
+  'New Lease': 'አዲስ ሊዝ',
+  'New Request': 'አዲስ ጥያቄ',
+  'New Complaint': 'አዲስ ቅሬታ',
+  'Manual Invoice': 'የእጅ ደረሰኝ',
+  'Pay Now': 'አሁን ክፈል',
+  'Review': 'ክለሳ',
+  'Verify': 'አረጋግጥ',
+  'Terminate': 'ፍጻሜ ስጥ',
+  'Save Mall': 'ሞሉን አስቀምጥ',
+  'Save Shop': 'ሱቁን አስቀምጥ',
+  'Save Tenant': 'ተከራዩን አስቀምጥ',
+  'Save User': 'ተጠቃሚውን አስቀምጥ',
+  'Create Lease': 'ሊዝ ፍጠር',
+  'Create Invoice': 'ደረሰኝ ፍጠር',
+  'Create Backup Now': 'አሁን ምትኬ ፍጠር',
+  'Submit Payment': 'ክፍያ ላክ',
+  'Submit Complaint': 'ቅሬታ ላክ',
+  'Submit Request': 'ጥያቄ ላክ',
+  'Update Password': 'የሚስጥር ቁጥር አዘምን',
+  'Update Email': 'ኢሜይል አዘምን',
+  'Set Password': 'የሚስጥር ቁጥር አዘጋጅ',
+  'Download Receipt': 'ደረሰኝ አውርድ',
+  'Delete Permanently': 'ለዘላለም ሰርዝ',
+  'Deactivate Tenant': 'ተከራዩን አቦዝን',
+  'Deactivate User': 'ተጠቃሚውን አቦዝን',
+  'Cancel': 'ሰርዝ',
+  'Go Back': 'ወደኋላ ተመለስ',
+  // ── Table headers ────────────────────────────────
+  'Invoice #': 'ደረሰኝ #',
+  'Invoice Number': 'የደረሰኝ ቁጥር',
+  'Business Name': 'የንግድ ስም',
+  'Business Type': 'የንግድ አይነት',
+  'Shop Number': 'የሱቅ ቁጥር',
+  'Monthly Rent': 'ወርሃዊ ኪራይ',
+  'Start Date': 'መጀመሪያ ቀን',
+  'End Date': 'የመጨረሻ ቀን',
+  'Due Date': 'የክፍያ ቀን',
+  'Issue Date': 'የተሰጠ ቀን',
+  'Payment Date': 'የክፍያ ቀን',
+  'Period': 'ጊዜ',
+  'Amount': 'መጠን',
+  'Amount Paid': 'የተከፈለ መጠን',
+  'Base Rent': 'መሰረታዊ ኪራይ',
+  'Maintenance Fee': 'የጥገና ክፍያ',
+  'Penalty': 'ቅጣት',
+  'Total': 'ጠቅላላ',
+  'Total Due': 'ጠቅላላ የሚፈለግ',
+  'Status': 'ሁኔታ',
+  'Actions': 'እርምጃዎች',
+  'Floor': 'ፎቅ',
+  'Size': 'መጠን',
+  'Type': 'አይነት',
+  'Mall': 'ሞል',
+  'Shop': 'ሱቅ',
+  'Name': 'ስም',
+  'Email': 'ኢሜይል',
+  'Phone': 'ስልክ',
+  'Role': 'ሚና',
+  'Active': 'ንቁ',
+  'Joined': 'የተቀላቀለ',
+  'Subject': 'ርዕስ',
+  'Response': 'ምላሽ',
+  'Priority': 'ቅድሚያ',
+  'Assigned To': 'የተሰጠ ለ',
+  'Requested By': 'የጠየቀ',
+  'Tenant': 'ተከራይ',
+  'Method': 'ዘዴ',
+  'Reference': 'ማጣቀሻ',
+  'Submitted': 'የቀረበ',
+  'Days Late': 'ዘግይቶ ያለ ቀናት',
+  'Days Left': 'የቀሩ ቀናት',
+  'Expires': 'ያልቃል',
+  // ── Reports ──────────────────────────────────────
+  'Reports & Analytics': 'ሪፖርቶችና ትንታኔዎች',
+  'Total Collected': 'ጠቅላላ የተሰበሰበ',
+  'Outstanding': 'ያልተከፈለ',
+  'Total Penalties': 'ጠቅላላ ቅጣቶች',
+  'Occupancy Rate': 'የወረዛ መጠን',
+  'Invoice Status': 'የደረሰኝ ሁኔታ',
+  'Monthly Collection': 'ወርሃዊ ስብስብ',
+  'Top Overdue Accounts': 'ዋና ያለፉ ደረሰኞች',
+  'Leases Expiring': 'የሚያልቁ ሊዝ ስምምነቶች',
+  'Database Backup': 'የዳታቤዝ ምትኬ',
+  'Create Backup': 'ምትኬ ፍጠር',
+  'Restore from Backup': 'ከምትኬ መልስ',
+  'Select Backup File': 'የምትኬ ፋይል ምረጥ',
+  'Admin Password': 'የአስተዳዳሪ የሚስጥር ቁጥር',
+  'Restore Selected Backup': 'የተመረጠውን ምትኬ መልስ',
+  'Erase All Operational Data': 'ሁሉንም ስራ ላይ ያለ መረጃ ሰርዝ',
+  'Open Erase Panel': 'የስረዛ ፓነል ክፈት',
+  'Erase All Data Permanently': 'ሁሉንም መረጃ ለዘላለም ሰርዝ',
+  'Danger Zone': 'አደገኛ ቦታ',
+  // ── Notifications ────────────────────────────────
+  'Notifications': 'ማሳወቂያዎች',
+  'No notifications yet': 'እስካሁን ምንም ማሳወቂያ የለም',
+  'Pre-Deadline Reminder': 'ከቀን በፊት ማስታወሻ',
+  'Post-Deadline Reminder': 'ከቀን በኋላ ማስታወሻ',
+  'Payment Confirmed': 'ክፍያ ተረጋግጧል',
+  'Payment Rejected': 'ክፍያ ተቀባይነት አላገኘም',
+  'Lease Expiry Warning': 'የሊዝ ማብቂያ ማስጠንቀቂያ',
+  'Account Created': 'መለያ ተፈጥሯል',
+  // ── Misc ─────────────────────────────────────────
+  'No invoices yet': 'እስካሁን ደረሰኝ የለም',
+  'No leases found': 'ሊዝ ስምምነት አልተገኘም',
+  'No payments found': 'ክፍያ አልተገኘም',
+  'No tenants yet': 'እስካሁን ተከራይ የለም',
+  'No shops found': 'ሱቅ አልተገኘም',
+  'No malls yet': 'እስካሁን ሞል የለም',
+  'No complaints': 'ቅሬታ የለም',
+  'No maintenance requests': 'የጥገና ጥያቄ የለም',
+  'No overdue accounts': 'ያለፈ ደረሰኝ የለም',
+  'No leases expiring soon': 'በቅርቡ የሚያልቅ ሊዝ የለም',
+  'No pending payments': 'በመጠባበቅ ያለ ክፍያ የለም',
+  'Lease Detail': 'የሊዝ ዝርዝር',
+  'Tenant Detail': 'የተከራይ ዝርዝር',
+  'Invoice Detail': 'የደረሰኝ ዝርዝር',
+  'Tenant Info': 'የተከራይ መረጃ',
+  'Active Lease': 'ንቁ ሊዝ',
+  'Invoice History': 'የደረሰኝ ታሪክ',
+  'Payment Details': 'የክፍያ ዝርዝር',
+  'Lease Info': 'የሊዝ መረጃ',
+  'Your Decision': 'ውሳኔዎ',
+  'Verify - Mark as Paid': 'አረጋጋጥ - እንደ ተከፈለ ምልክት አድርግ',
+  'Reject - Send Back to Tenant': 'ተቀባይነት አሳጣ - ወደ ተከራይ ላክ',
+  'Upload Payment Proof': 'የክፍያ ማስረጃ ጫን',
+  'Invoice Summary': 'የደረሰኝ ማጠቃለያ',
+  'Payment Receipt': 'የክፍያ ደረሰኝ',
+  'Set Your New Password': 'አዲስ የሚስጥር ቁጥርዎን ያዘጋጁ',
+  'User Management': 'የተጠቃሚ አስተዳደር',
+  'Add New Staff User': 'አዲስ ሰራተኛ ተጠቃሚ ጨምር',
+  'Tenant Management': 'የተከራይ አስተዳደር',
+  'Add New Tenant': 'አዲስ ተከራይ ጨምር',
+  'Add New Mall': 'አዲስ ሞል ጨምር',
+  'Add New Shop': 'አዲስ ሱቅ ጨምር',
+  'Create New Lease': 'አዲስ ሊዝ ፍጠር',
+  'Terminate Lease': 'ሊዝ ፍጻሜ ስጥ',
+  'Remove Tenant': 'ተከራይ አስወግድ',
+  'Delete Mall': 'ሞል ሰርዝ',
+  'Delete Shop': 'ሱቅ ሰርዝ',
+  'Delete User': 'ተጠቃሚ ሰርዝ',
+  'Maintenance Requests': 'የጥገና ጥያቄዎች',
+  'New Maintenance Request': 'አዲስ የጥገና ጥያቄ',
+  'Request Details': 'የጥያቄ ዝርዝር',
+  'Update Status': 'ሁኔታ አዘምን',
+  'Submit a Complaint': 'ቅሬታ ያቅርቡ',
+  'Complaint Detail': 'የቅሬታ ዝርዝር',
+  'Respond': 'ምላሽ ስጥ',
+  'Penalty Log': 'የቅጣት መዝገብ',
+  'Days Overdue': 'ዘግይቶ ያለ ቀናት',
+  'Daily Rate': 'ዕለታዊ ተመን',
+  'Cumulative Penalty': 'ድምር ቅጣት',
+  'Showing data for': 'መረጃ የሚታየው ለ',
+  'Finance Only': 'ለፋይናንስ ብቻ',
+  'View only': 'ለማየት ብቻ',
+  'Awaiting Finance': 'ፋይናንስ እየጠበቀ',
+  'Lease Ends': 'ሊዝ ያልቃል',
+  'Days Left on Lease': 'በሊዝ ላይ የቀሩ ቀናት',
+  'Unpaid Invoices': 'ያልተከፈሉ ደረሰኞች',
+  'Total Outstanding': 'ጠቅላላ ያልተከፈለ',
+  'Awaiting Verification': 'ማረጋገጫ እየጠበቀ',
+  'Verified Today': 'ዛሬ የተረጋገጠ',
+};
+
+// Sort keys longest first so multi-word phrases match
+// before single words (e.g. "Change Password" before "Password")
+const sortedKeys = Object.keys(dict).sort(
+  (a, b) => b.length - a.length
+);
+
+let isAmharic = localStorage.getItem('lang') === 'am';
+// Map from text node -> original text
+const originals = new Map();
+
+function getAllTextNodes(root) {
+  const nodes  = [];
+  const walker = document.createTreeWalker(
+    root,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode(node) {
+        const tag = node.parentNode
+                       ? node.parentNode.tagName : '';
+        if (['SCRIPT','STYLE','TEXTAREA'].includes(tag)) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        if (!node.textContent.trim()) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    }
+  );
+  let n;
+  while ((n = walker.nextNode())) nodes.push(n);
+  return nodes;
+}
+
+function translateNode(node, toAmharic) {
+  if (toAmharic) {
+    // Save original if first time
+    if (!originals.has(node)) {
+      originals.set(node, node.textContent);
+    }
+    let text = node.textContent;
+    for (const key of sortedKeys) {
+      if (text.includes(key)) {
+        text = text.split(key).join(dict[key]);
+      }
+    }
+    node.textContent = text;
+  } else {
+    // Restore
+    if (originals.has(node)) {
+      node.textContent = originals.get(node);
+    }
+  }
+}
+
+function translatePage(toAmharic) {
+  const nodes = getAllTextNodes(document.body);
+  nodes.forEach(n => translateNode(n, toAmharic));
+
+  // Also translate placeholder and title attributes
+  document.querySelectorAll('[placeholder]').forEach(el => {
+    if (toAmharic) {
+      if (!el.dataset.origPlaceholder) {
+        el.dataset.origPlaceholder = el.placeholder;
+      }
+      let p = el.placeholder;
+      for (const key of sortedKeys) {
+        if (p.includes(key)) p = p.split(key).join(dict[key]);
+      }
+      el.placeholder = p;
+    } else {
+      if (el.dataset.origPlaceholder) {
+        el.placeholder = el.dataset.origPlaceholder;
+      }
+    }
+  });
+
+  // Update lang button label
+  const lbl = document.getElementById('lang-label');
+  if (lbl) lbl.textContent = toAmharic ? 'English' : 'አማርኛ';
+}
+
+function toggleLang() {
+  isAmharic = !isAmharic;
+  localStorage.setItem('lang', isAmharic ? 'am' : 'en');
+  translatePage(isAmharic);
+}
+
+// Apply on DOM ready — use DOMContentLoaded + small delay
+// to ensure all dynamic Django content is rendered
+document.addEventListener('DOMContentLoaded', function() {
+  // Update button label
+  const lbl = document.getElementById('lang-label');
+  if (lbl) lbl.textContent = isAmharic ? 'English' : 'አማርኛ';
+  // Apply translation after brief delay for full render
+  if (isAmharic) {
+  // Translate immediately then remove the opacity block
+  translatePage(true);
+}
+});
+</script>
+{% endblock %}

@@ -1,0 +1,417 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Reports & Analytics{% endblock %}
+
+{% block dashboard_content %}
+{% if assigned_mall %}
+<div class="alert alert-info mb-3 py-2">
+  <i class="bi bi-building me-2"></i>
+  Showing data for: <strong>{{ assigned_mall.name }}</strong>
+</div>
+{% endif %}
+
+<!-- Financial Summary Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="metric-card">
+      <div class="icon-box mb-2" style="background:#e8f5e9;">
+        <i class="bi bi-cash-stack" style="color:#28a745;"></i>
+      </div>
+      <div class="value text-success" style="font-size:20px;">
+        ETB {{ total_collected|floatformat:0 }}
+      </div>
+      <div class="label">Total Collected</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="metric-card">
+      <div class="icon-box mb-2" style="background:#fde8e8;">
+        <i class="bi bi-exclamation-circle" style="color:#dc3545;"></i>
+      </div>
+      <div class="value text-danger" style="font-size:20px;">
+        ETB {{ total_outstanding|floatformat:0 }}
+      </div>
+      <div class="label">Outstanding</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="metric-card">
+      <div class="icon-box mb-2" style="background:#fff8e1;">
+        <i class="bi bi-slash-circle" style="color:#f0a500;"></i>
+      </div>
+      <div class="value text-warning" style="font-size:20px;">
+        ETB {{ total_penalty|floatformat:0 }}
+      </div>
+      <div class="label">Total Penalties</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="metric-card">
+      <div class="icon-box mb-2" style="background:#e8f0fe;">
+        <i class="bi bi-building" style="color:#1a3c5e;"></i>
+      </div>
+      <div class="value">{{ occupancy_rate }}%</div>
+      <div class="label">Occupancy Rate</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-12 col-lg-4">
+    <div class="table-card h-100">
+      <div class="card-header">
+        <i class="bi bi-pie-chart me-2"></i>Invoice Status
+      </div>
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded"
+             style="background:#d1edde;">
+          <span class="fw-semibold">
+            <i class="bi bi-check-circle me-2 text-success"></i>Paid
+          </span>
+          <span class="badge bg-success fs-6">
+            {{ inv_by_status.paid }}
+          </span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded"
+             style="background:#fff3cd;">
+          <span class="fw-semibold">
+            <i class="bi bi-clock me-2 text-warning"></i>Unpaid
+          </span>
+          <span class="badge bg-warning text-dark fs-6">
+            {{ inv_by_status.unpaid }}
+          </span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded"
+             style="background:#f8d7da;">
+          <span class="fw-semibold">
+            <i class="bi bi-exclamation-triangle me-2 text-danger"></i>Overdue
+          </span>
+          <span class="badge bg-danger fs-6">
+            {{ inv_by_status.overdue }}
+          </span>
+        </div>
+        <hr>
+        <div class="progress" style="height:12px;">
+          <div class="progress-bar bg-success"
+               style="width:{{ occupancy_rate }}%"></div>
+        </div>
+        <div class="text-center small text-muted mt-1">
+          {{ occupied_shops }} of {{ total_shops }} shops occupied
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-8">
+    <div class="table-card">
+      <div class="card-header">
+        <i class="bi bi-bar-chart me-2"></i>
+        Monthly Collection — {{ report_year }}
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Amount (ETB)</th>
+              <th style="width:200px;">Progress</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in monthly_collection %}
+            <tr>
+              <td class="fw-semibold">
+                {{ row.month_name }} {{ report_year }}
+              </td>
+              <td>{{ row.total|floatformat:2 }}</td>
+              <td>
+                {% if total_collected > 0 %}
+                <div class="progress" style="height:8px;">
+                  <div class="progress-bar bg-success"
+                       style="width:{% widthratio row.total total_collected 100 %}%">
+                  </div>
+                </div>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3"
+                  class="text-center text-muted py-4">
+                No verified payments in {{ report_year }} yet.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-12 col-lg-6">
+    <div class="table-card">
+      <div class="card-header text-danger">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Top Overdue Accounts
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Tenant</th><th>Invoice</th>
+              <th>Days</th><th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inv in overdue_tenants %}
+            <tr>
+              <td>{{ inv.lease.tenant.business_name }}</td>
+              <td>
+                <a href="{% url 'invoices:invoice_detail' inv.pk %}">
+                  {{ inv.invoice_number }}
+                </a>
+              </td>
+              <td>
+                <span class="badge bg-danger">
+                  {{ inv.get_days_overdue }} days
+                </span>
+              </td>
+              <td class="fw-bold text-danger">
+                ETB {{ inv.total_amount|floatformat:2 }}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4"
+                  class="text-center text-muted py-3">
+                No overdue accounts
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-6">
+    <div class="table-card">
+      <div class="card-header text-warning">
+        <i class="bi bi-calendar-x me-2"></i>
+        Leases Expiring (Next 60 Days)
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Tenant</th><th>Shop</th>
+              <th>Expires</th><th>Days</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for lease in expiring_leases %}
+            <tr>
+              <td>{{ lease.tenant.business_name }}</td>
+              <td>{{ lease.shop.shop_number }}</td>
+              <td>{{ lease.end_date }}</td>
+              <td>
+                <span class="badge
+                  {% if lease.days_until_expiry <= 30 %}bg-danger
+                  {% else %}bg-warning text-dark{% endif %}">
+                  {{ lease.days_until_expiry }} days
+                </span>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4"
+                  class="text-center text-muted py-3">
+                No leases expiring soon
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if role == 'SUPER_ADMIN' %}
+
+<!-- ── Backup & Restore ── -->
+<div class="table-card mb-4">
+  <div class="card-header">
+    <i class="bi bi-cloud-arrow-down me-2"></i>
+    Database Backup & Restore
+  </div>
+  <div class="card-body p-4">
+    <div class="row g-4">
+
+      <!-- Create Backup -->
+      <div class="col-12 col-md-4">
+        <h6 class="fw-bold mb-2">
+          <i class="bi bi-download me-2 text-primary"></i>
+          Create Backup
+        </h6>
+        <p class="text-muted small mb-3">
+          Saves a full SQL backup to the
+          <code>backups/</code> folder.
+          Runs automatically every Sunday at 2am.
+        </p>
+        <form method="post"
+              action="{% url 'dashboard:run_backup' %}">
+          {% csrf_token %}
+          <button type="submit"
+                  class="btn btn-primary w-100"
+                  onclick="return confirm('Create a backup now?')">
+            <i class="bi bi-cloud-arrow-down me-2"></i>
+            Create Backup Now
+          </button>
+        </form>
+      </div>
+
+      <!-- Restore from Backup -->
+      <div class="col-12 col-md-8">
+        <h6 class="fw-bold mb-2">
+          <i class="bi bi-cloud-arrow-up me-2 text-success"></i>
+          Restore from Backup
+        </h6>
+        {% if backup_files %}
+        <form method="post"
+              action="{% url 'dashboard:restore_backup' %}"
+              onsubmit="return confirmRestore()">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">
+              Select Backup File
+            </label>
+            <select name="backup_file"
+                    class="form-select form-select-sm"
+                    required>
+              <option value="">
+                — Choose a backup file —
+              </option>
+              {% for bf in backup_files %}
+              <option value="{{ bf.name }}">
+                {{ bf.name }} ({{ bf.size_kb }} KB)
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">
+              Admin Password (to confirm)
+            </label>
+            <input type="password"
+                   name="admin_password"
+                   class="form-control form-control-sm"
+                   placeholder="Enter your password"
+                   required>
+          </div>
+          <button type="submit"
+                  class="btn btn-success btn-sm">
+            <i class="bi bi-cloud-arrow-up me-2"></i>
+            Restore Selected Backup
+          </button>
+        </form>
+        {% else %}
+        <div class="alert alert-secondary py-2 small">
+          No backup files found in
+          <code>backups/</code> folder.
+          Create a backup first.
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Erase All Data ── -->
+<div class="table-card border-danger mb-4"
+     style="border: 2px solid #dc3545;">
+  <div class="card-header text-danger">
+    <i class="bi bi-trash3 me-2"></i>
+    Erase All Operational Data
+  </div>
+  <div class="card-body p-4">
+    <div class="alert alert-danger mb-3">
+      <strong>
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Danger Zone
+      </strong><br>
+      This will permanently delete all invoices,
+      payments, leases, tenant accounts, complaints,
+      and maintenance records.<br>
+      <strong>A backup is created automatically
+      before erasing.</strong><br>
+      Staff accounts, malls, and shops are preserved.
+    </div>
+    <button class="btn btn-outline-danger btn-sm"
+            data-bs-toggle="collapse"
+            data-bs-target="#eraseForm">
+      <i class="bi bi-trash3 me-2"></i>
+      Open Erase Panel
+    </button>
+    <div class="collapse mt-3" id="eraseForm">
+      <form method="post"
+            action="{% url 'dashboard:erase_data' %}"
+            onsubmit="return confirmErase()">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">
+            Type <strong>ERASE</strong> to confirm
+          </label>
+          <input type="text"
+                 name="confirm_text"
+                 class="form-control form-control-sm"
+                 placeholder="Type ERASE here"
+                 autocomplete="off"
+                 required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">
+            Admin Password
+          </label>
+          <input type="password"
+                 name="admin_password"
+                 class="form-control form-control-sm"
+                 placeholder="Enter your password"
+                 required>
+        </div>
+        <button type="submit"
+                class="btn btn-danger btn-sm">
+          <i class="bi bi-trash3 me-2"></i>
+          Erase All Data Permanently
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmRestore() {
+  return confirm(
+    "WARNING: This will overwrite the current database " +
+    "with the selected backup.\n\n" +
+    "All current data will be replaced.\n\n" +
+    "Are you absolutely sure?"
+  );
+}
+function confirmErase() {
+  return confirm(
+    "FINAL WARNING\n\n" +
+    "You are about to permanently erase all " +
+    "operational data.\n" +
+    "A backup will be created first.\n\n" +
+    "This cannot be undone. Continue?"
+  );
+}
+</script>
+{% endblock %}

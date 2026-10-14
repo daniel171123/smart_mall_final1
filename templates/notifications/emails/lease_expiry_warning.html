@@ -1,0 +1,35 @@
+{% extends 'notifications/emails/base_email.html' %}
+{% block email_body %}
+<p class="greeting">
+    Dear <strong>{{ tenant.user.get_full_name }}</strong>,
+</p>
+<p>This is an important notice that your lease agreement
+   for <strong>Shop {{ shop.shop_number }}</strong> at
+   <strong>{{ mall.name }}</strong> is expiring soon.</p>
+
+<div class="breakdown-box">
+    <h4>📋 Lease Expiry Details</h4>
+    <div class="breakdown-row">
+        <span>Shop</span>
+        <span>Shop {{ shop.shop_number }}, {{ shop.floor }} Floor</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Mall</span>
+        <span>{{ mall.name }}</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Lease End Date</span>
+        <span>{{ end_date }}</span>
+    </div>
+    <div class="breakdown-row total">
+        <span>Days Remaining</span>
+        <span>{{ days_remaining }} days</span>
+    </div>
+</div>
+
+<div class="alert-box alert-warning">
+    ⚠️ Please contact the mall management office to
+    discuss lease renewal before <strong>{{ end_date }}</strong>.
+    Failure to renew may result in lease termination.
+</div>
+{% endblock %}

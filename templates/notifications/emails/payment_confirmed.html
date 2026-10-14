@@ -1,0 +1,43 @@
+{% extends 'notifications/emails/base_email.html' %}
+{% block email_body %}
+<p class="greeting">
+    Dear <strong>{{ tenant.user.get_full_name }}</strong>,
+</p>
+
+<div class="alert-box alert-success">
+    ✅ Your payment for invoice
+    <strong>{{ invoice.invoice_number }}</strong>
+    has been verified and confirmed.
+</div>
+
+<div class="breakdown-box">
+    <h4>✅ Payment Receipt</h4>
+    <div class="breakdown-row">
+        <span>Invoice Number</span>
+        <span>{{ invoice.invoice_number }}</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Period</span>
+        <span>{{ period_start }} to {{ period_end }}</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Amount Paid</span>
+        <span>ETB {{ payment.amount_paid }}</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Payment Method</span>
+        <span>{{ payment.get_payment_method_display }}</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Verified On</span>
+        <span>{{ payment.verified_at|date:"N j, Y" }}</span>
+    </div>
+    <div class="breakdown-row total">
+        <span>Status</span>
+        <span>✅ PAID</span>
+    </div>
+</div>
+
+<p>Thank you for your payment. Keep this email as
+   your digital receipt.</p>
+{% endblock %}

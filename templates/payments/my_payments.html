@@ -1,0 +1,39 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}My Payments{% endblock %}
+{% block page_title %}My Payments{% endblock %}
+{% block dashboard_content %}
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Invoice</th><th>Amount Paid</th><th>Method</th><th>Payment Date</th><th>Status</th><th>Receipt</th></tr></thead>
+      <tbody>
+        {% for pay in payments %}
+        <tr>
+          <td>{{ pay.invoice.invoice_number }}</td>
+          <td class="fw-bold">ETB {{ pay.amount_paid }}</td>
+          <td>{{ pay.get_payment_method_display }}</td>
+          <td>{{ pay.payment_date }}</td>
+          <td>
+            {% if pay.status == 'VERIFIED' %}
+            <span class="badge badge-paid">Verified</span>
+            {% elif pay.status == 'PENDING_VERIFICATION' %}
+            <span class="badge badge-unpaid">Pending</span>
+            {% else %}
+            <span class="badge badge-overdue">Rejected</span>
+            {% if pay.rejection_reason %}<div class="small text-danger mt-1">{{ pay.rejection_reason }}</div>{% endif %}
+            {% endif %}
+          </td>
+          <td>
+            {% if pay.status == 'VERIFIED' %}
+            <a href="{% url 'payments:download_receipt' pay.pk %}" class="btn btn-sm btn-success"><i class="bi bi-file-earmark-pdf me-1"></i>Download Receipt</a>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No payments yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

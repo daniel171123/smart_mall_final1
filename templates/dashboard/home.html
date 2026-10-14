@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-success">
+        <h4>✅ Login Successful!</h4>
+        <p>Welcome, {{ request.user.get_full_name }}.
+           You are logged in as
+           <strong>{{ request.user.role }}</strong>.</p>
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button class="btn btn-danger btn-sm">Logout</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

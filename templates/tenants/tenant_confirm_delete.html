@@ -1,0 +1,39 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}Remove Tenant{% endblock %}
+{% block page_title %}Remove Tenant{% endblock %}
+{% block dashboard_content %}
+<div class="row justify-content-center"><div class="col-12 col-lg-6">
+<div class="table-card border-danger" style="border:2px solid #dc3545;">
+  <div class="card-header text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Remove Tenant</div>
+  <div class="card-body p-4">
+    <p><strong>Business:</strong> {{ tenant.business_name }}</p>
+    <p><strong>Owner:</strong> {{ tenant.user.get_full_name }}</p>
+    <p><strong>Email:</strong> {{ tenant.user.email }}</p>
+    <hr>
+    {% if has_invoices %}
+    <div class="alert alert-warning">
+      <i class="bi bi-exclamation-triangle me-2"></i>
+      <strong>This tenant has financial records (invoices/payments).</strong><br>
+      For legal and audit purposes, their financial records will be preserved.<br>
+      Their account will be <strong>deactivated</strong> instead of deleted — they will no longer be able to log in.
+    </div>
+    {% else %}
+    <div class="alert alert-danger">
+      <i class="bi bi-trash me-2"></i>
+      This tenant has no financial records. Their account will be <strong>permanently deleted</strong>. This cannot be undone.
+    </div>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-danger">
+          <i class="bi bi-{% if has_invoices %}person-x{% else %}trash{% endif %} me-2"></i>
+          {% if has_invoices %}Deactivate Tenant{% else %}Delete Permanently{% endif %}
+        </button>
+        <a href="{% url 'tenants:tenant_detail' tenant.pk %}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+</div></div>
+{% endblock %}

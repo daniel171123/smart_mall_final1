@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+
+<!-- Language switcher JS -->
+<script>
+const translations = {
+  en: {
+    title:    "Smart Mall System",
+    subtitle: "Rental Management Platform",
+    welcome:  "Welcome Back",
+    signin:   "Sign in to your account",
+    email:    "Email Address",
+    password: "Password",
+    forgot:   "Forgot password?",
+    btn:      "Sign In",
+    lang:     "አማርኛ",
+  },
+  am: {
+    title:    "ስማርት ሞል ሲስተም",
+    subtitle: "የኪራይ አስተዳደር መድረክ",
+    welcome:  "እንኳን ደህና መጡ",
+    signin:   "ወደ መለያዎ ይግቡ",
+    email:    "ኢሜይል አድራሻ",
+    password: "የሚስጥር ቁጥር",
+    forgot:   "የሚስጥር ቁጥር ረሱ?",
+    btn:      "ግባ",
+    lang:     "English",
+  }
+};
+let currentLang = localStorage.getItem("lang") || "en";
+
+function applyLang(lang) {
+  const t = translations[lang];
+  document.getElementById("txt-title").textContent    = t.title;
+  document.getElementById("txt-subtitle").textContent = t.subtitle;
+  document.getElementById("txt-welcome").textContent  = t.welcome;
+  document.getElementById("txt-signin").textContent   = t.signin;
+  document.getElementById("txt-email").textContent    = t.email;
+  document.getElementById("txt-password").textContent = t.password;
+  document.getElementById("txt-forgot").textContent   = t.forgot;
+  document.getElementById("txt-btn").textContent      = t.btn;
+  document.getElementById("lang-btn").textContent     = t.lang;
+  document.documentElement.lang = lang === "am" ? "am" : "en";
+}
+
+function toggleLang() {
+  currentLang = currentLang === "en" ? "am" : "en";
+  localStorage.setItem("lang", currentLang);
+  applyLang(currentLang);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  applyLang(currentLang);
+});
+</script>
+
+<div class="min-vh-100 d-flex align-items-center justify-content-center"
+     style="background:linear-gradient(135deg,#1a3c5e 0%,#14304d 100%);">
+
+  <!-- Language toggle button — top right -->
+  <div style="position:fixed;top:16px;right:16px;">
+    <button id="lang-btn"
+            onclick="toggleLang()"
+            class="btn btn-sm"
+            style="background:rgba(255,255,255,.15);
+                   color:#fff;border:1px solid rgba(255,255,255,.3);
+                   border-radius:20px;padding:5px 14px;
+                   font-size:13px;font-weight:600;">
+      አማርኛ
+    </button>
+  </div>
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-sm-9 col-md-6 col-lg-5 col-xl-4">
+
+        <!-- Logo / Title -->
+        <div class="text-center mb-4">
+          <div class="bg-white rounded-circle d-inline-flex
+                      align-items-center justify-content-center mb-3"
+               style="width:70px;height:70px;">
+            <i class="bi bi-building text-primary fs-2"></i>
+          </div>
+          <h2 id="txt-title"
+              class="text-white fw-bold">
+            Smart Mall System
+          </h2>
+          <p id="txt-subtitle"
+             class="text-white-50">
+            Rental Management Platform
+          </p>
+        </div>
+
+        <!-- Card -->
+        <div class="card border-0 shadow-lg rounded-4">
+          <div class="card-body p-4 p-md-5">
+
+            {% if locked %}
+            <div class="alert alert-danger text-center">
+              <i class="bi bi-lock me-2"></i>
+              Too many failed attempts.<br>
+              Please try again in 15 minutes.
+            </div>
+            {% else %}
+
+            <h4 id="txt-welcome"
+                class="fw-bold text-center mb-1">
+              Welcome Back
+            </h4>
+            <p id="txt-signin"
+               class="text-muted text-center mb-4">
+              Sign in to your account
+            </p>
+
+            <form method="post" novalidate>
+              {% csrf_token %}
+              <div class="mb-3">
+                <label id="txt-email"
+                       class="form-label fw-semibold">
+                  Email Address
+                </label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                <div class="text-danger small mt-1">
+                  {{ form.username.errors.0 }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                  <label id="txt-password"
+                         class="form-label fw-semibold">
+                    Password
+                  </label>
+                  <a id="txt-forgot"
+                     href="{% url 'accounts:forgot_password' %}"
+                     class="small text-primary">
+                    Forgot password?
+                  </a>
+                </div>
+                {{ form.password }}
+                {% if form.password.errors %}
+                <div class="text-danger small mt-1">
+                  {{ form.password.errors.0 }}
+                </div>
+                {% endif %}
+              </div>
+              {% if form.non_field_errors %}
+              <div class="alert alert-danger py-2">
+                {{ form.non_field_errors.0 }}
+              </div>
+              {% endif %}
+              <div class="d-grid mt-4">
+                <button type="submit"
+                        class="btn btn-primary btn-lg fw-semibold">
+                  <i class="bi bi-box-arrow-in-right me-2"></i>
+                  <span id="txt-btn">Sign In</span>
+                </button>
+              </div>
+            </form>
+            {% endif %}
+
+          </div>
+        </div>
+
+        <p class="text-center text-white-50 mt-4 small">
+          &copy; {% now "Y" %} Smart Mall Rental System
+        </p>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

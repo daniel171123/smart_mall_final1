@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4;
+           margin: 0; padding: 20px; }
+    .wrapper { max-width: 620px; margin: 0 auto; }
+    .header  { background: #1a3c5e; padding: 25px 30px;
+               border-radius: 8px 8px 0 0; text-align: center; }
+    .header h2 { color: white; margin: 0; font-size: 22px; }
+    .header p  { color: #a0c0e0; margin: 5px 0 0; font-size: 13px; }
+    .body    { background: white; padding: 30px;
+               border-left: 1px solid #ddd;
+               border-right: 1px solid #ddd; }
+    .greeting { font-size: 16px; color: #333; }
+    .breakdown-box {
+        background: #f8f9fa; border: 1px solid #e0e0e0;
+        border-radius: 8px; padding: 20px; margin: 20px 0;
+    }
+    .breakdown-box h4 {
+        color: #1a3c5e; margin: 0 0 15px;
+        font-size: 15px; border-bottom: 2px solid #1a3c5e;
+        padding-bottom: 8px;
+    }
+    .breakdown-row {
+        display: flex; justify-content: space-between;
+        padding: 6px 0; font-size: 14px; color: #444;
+        border-bottom: 1px solid #eee;
+    }
+    .breakdown-row:last-child { border-bottom: none; }
+    .breakdown-row.total {
+        font-weight: bold; font-size: 16px;
+        color: #1a3c5e; padding-top: 10px;
+        border-top: 2px solid #1a3c5e;
+    }
+    .penalty-row { color: #dc3545 !important; }
+    .btn-pay {
+        display: inline-block; background: #1a3c5e;
+        color: white !important; padding: 12px 30px;
+        border-radius: 6px; text-decoration: none;
+        font-weight: bold; margin: 20px 0;
+    }
+    .alert-box {
+        padding: 12px 16px; border-radius: 6px;
+        margin: 15px 0; font-size: 14px;
+    }
+    .alert-warning { background: #fff3cd; border-left:
+                     4px solid #f0a500; color: #856404; }
+    .alert-danger  { background: #f8d7da; border-left:
+                     4px solid #dc3545; color: #721c24; }
+    .alert-success { background: #d1edde; border-left:
+                     4px solid #28a745; color: #155724; }
+    .footer { background: #f8f8f8; padding: 15px 30px;
+              text-align: center; font-size: 12px;
+              color: #999; border-radius: 0 0 8px 8px;
+              border: 1px solid #ddd; border-top: none; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="header">
+        <h2>🏬 Smart Mall System</h2>
+        <p>Rental Management Platform</p>
+    </div>
+    <div class="body">
+        {% block email_body %}{% endblock %}
+    </div>
+    <div class="footer">
+        This is an automated message from Smart Mall
+        Rental Management System.<br>
+        Please do not reply to this email.
+    </div>
+</div>
+</body>
+</html>

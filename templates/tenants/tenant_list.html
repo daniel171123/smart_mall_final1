@@ -1,0 +1,33 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}Tenants{% endblock %}
+{% block page_title %}Tenants{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="mb-0">All Tenants</h5>
+  <a href="{% url 'tenants:tenant_create' %}" class="btn btn-primary btn-sm"><i class="bi bi-person-plus me-1"></i>Add Tenant</a>
+</div>
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Business Name</th><th>Owner</th><th>Email</th><th>Phone</th><th>Type</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for t in tenants %}
+        <tr>
+          <td class="fw-semibold"><a href="{% url 'tenants:tenant_detail' t.pk %}">{{ t.business_name }}</a></td>
+          <td>{{ t.user.get_full_name }}</td>
+          <td>{{ t.user.email }}</td>
+          <td>{{ t.user.phone_number }}</td>
+          <td>{{ t.business_type }}</td>
+          <td>
+            <a href="{% url 'tenants:tenant_detail' t.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+            <a href="{% url 'tenants:tenant_edit' t.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No tenants yet. <a href="{% url 'tenants:tenant_create' %}">Add one</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

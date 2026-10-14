@@ -1,0 +1,23 @@
+
+from django.urls import path
+from . import views
+
+app_name = "invoices"
+
+urlpatterns = [
+    path("",
+         views.invoice_list,
+         name="invoice_list"),
+    path("create/",
+         views.invoice_create,
+         name="invoice_create"),
+    path("<int:pk>/",
+         views.invoice_detail,
+         name="invoice_detail"),
+    path("<int:pk>/delete/",
+         views.invoice_delete,
+         name="invoice_delete"),
+    path("my/",
+         views.my_invoices,
+         name="my_invoices"),
+]

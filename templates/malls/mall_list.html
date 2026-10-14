@@ -1,0 +1,38 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}Malls{% endblock %}
+{% block page_title %}Malls{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="mb-0">All Malls</h5>
+  <a href="{% url 'malls:mall_create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i>Add Mall</a>
+</div>
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Name</th><th>City</th><th>Phone</th><th>Shops</th><th>Occupancy</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for mall in malls %}
+        <tr>
+          <td class="fw-semibold">{{ mall.name }}</td>
+          <td>{{ mall.city }}</td>
+          <td>{{ mall.contact_phone }}</td>
+          <td>{{ mall.get_total_shops }} total</td>
+          <td>
+            <div class="progress" style="height:8px;width:80px;">
+              <div class="progress-bar bg-success" style="width:{{ mall.get_occupancy_rate }}%"></div>
+            </div>
+            <small class="text-muted">{{ mall.get_occupancy_rate }}%</small>
+          </td>
+          <td class="d-flex gap-1">
+            <a href="{% url 'malls:mall_edit' mall.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+            <a href="{% url 'malls:mall_delete' mall.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No malls yet. <a href="{% url 'malls:mall_create' %}">Add one</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

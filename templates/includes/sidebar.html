@@ -1,0 +1,154 @@
+<nav id="sidebar">
+  <div class="brand">
+    <h5><i class="bi bi-building me-2"></i>Smart Mall</h5>
+    <div class="d-flex align-items-center gap-2 mt-1">
+      <div class="rounded-circle text-white d-flex align-items-center
+                  justify-content-center fw-bold flex-shrink-0"
+           style="width:30px;height:30px;
+                  background:rgba(255,255,255,.15);font-size:13px;">
+        {{ user.first_name|first|upper }}
+      </div>
+      <div>
+        <small class="d-block"
+               style="color:#fff;font-size:12px;font-weight:600;">
+          {{ user.get_full_name }}
+        </small>
+        <span class="badge"
+              style="background:rgba(240,165,0,.25);
+                     color:#f0a500;font-size:10px;padding:2px 7px;">
+          {% if user.role == 'SUPER_ADMIN' %}Super Admin
+          {% elif user.role == 'MANAGER' %}Manager
+          {% elif user.role == 'FINANCE' %}Finance Officer
+          {% elif user.role == 'TENANT' %}Tenant
+          {% else %}{{ user.role }}{% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div id="sidebar-nav">
+    {% with url_name=request.resolver_match.url_name app_name=request.resolver_match.app_name %}
+
+    <div class="nav-label">Main</div>
+    <a href="{% url 'dashboard:home' %}"
+       class="sidebar-link {% if url_name == 'home' and app_name == 'dashboard' %}active{% endif %}">
+      <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+    </a>
+
+    {% if user.role == 'SUPER_ADMIN' %}
+    <div class="nav-label">Administration</div>
+    <a href="{% url 'malls:mall_list' %}"
+       class="sidebar-link {% if app_name == 'malls' and 'shop' not in url_name %}active{% endif %}">
+      <i class="bi bi-building"></i><span>Malls</span>
+    </a>
+    <a href="{% url 'malls:shop_list' %}"
+       class="sidebar-link {% if app_name == 'malls' and 'shop' in url_name %}active{% endif %}">
+      <i class="bi bi-shop"></i><span>Shops</span>
+    </a>
+    <a href="{% url 'accounts:user_list' %}"
+       class="sidebar-link {% if app_name == 'accounts' and 'user' in url_name %}active{% endif %}">
+      <i class="bi bi-people"></i><span>Users</span>
+    </a>
+    {% endif %}
+
+    {% if user.role == 'MANAGER' or user.role == 'SUPER_ADMIN' %}
+    <div class="nav-label">Management</div>
+    <a href="{% url 'tenants:tenant_list' %}"
+       class="sidebar-link {% if app_name == 'tenants' %}active{% endif %}">
+      <i class="bi bi-person-badge"></i><span>Tenants</span>
+    </a>
+    <a href="{% url 'leases:lease_list' %}"
+       class="sidebar-link {% if app_name == 'leases' %}active{% endif %}">
+      <i class="bi bi-file-text"></i><span>Leases</span>
+    </a>
+    <a href="{% url 'invoices:invoice_list' %}"
+       class="sidebar-link {% if app_name == 'invoices' and url_name != 'my_invoices' %}active{% endif %}">
+      <i class="bi bi-receipt"></i><span>Invoices</span>
+    </a>
+    <a href="{% url 'payments:payment_list' %}"
+       class="sidebar-link {% if app_name == 'payments' and url_name == 'payment_list' %}active{% endif %}">
+      <i class="bi bi-cash-stack"></i><span>Payments</span>
+    </a>
+    <a href="{% url 'complaints:complaint_list' %}"
+       class="sidebar-link {% if app_name == 'complaints' and url_name == 'complaint_list' %}active{% endif %}">
+      <i class="bi bi-chat-left-text"></i><span>Complaints</span>
+    </a>
+    <a href="{% url 'maintenance:request_list' %}"
+       class="sidebar-link {% if app_name == 'maintenance' and url_name == 'request_list' %}active{% endif %}">
+      <i class="bi bi-tools"></i><span>Maintenance</span>
+    </a>
+    {% endif %}
+
+    {% if user.role == 'FINANCE' %}
+    <div class="nav-label">Finance</div>
+    <a href="{% url 'invoices:invoice_list' %}"
+       class="sidebar-link {% if app_name == 'invoices' and url_name != 'my_invoices' %}active{% endif %}">
+      <i class="bi bi-receipt"></i><span>Invoices</span>
+    </a>
+    <a href="{% url 'payments:payment_list' %}"
+       class="sidebar-link {% if app_name == 'payments' and url_name == 'payment_list' %}active{% endif %}">
+      <i class="bi bi-cash-stack"></i><span>Payments</span>
+    </a>
+    <a href="{% url 'complaints:complaint_list' %}"
+       class="sidebar-link {% if app_name == 'complaints' and url_name == 'complaint_list' %}active{% endif %}">
+      <i class="bi bi-chat-left-text"></i><span>Complaints</span>
+    </a>
+    {% endif %}
+
+    {% if user.role == 'TENANT' %}
+    <div class="nav-label">My Account</div>
+    <a href="{% url 'invoices:my_invoices' %}"
+       class="sidebar-link {% if url_name == 'my_invoices' %}active{% endif %}">
+      <i class="bi bi-receipt"></i><span>My Invoices</span>
+    </a>
+    <a href="{% url 'payments:my_payments' %}"
+       class="sidebar-link {% if url_name == 'my_payments' %}active{% endif %}">
+      <i class="bi bi-cash-stack"></i><span>My Payments</span>
+    </a>
+    <a href="{% url 'complaints:my_complaints' %}"
+       class="sidebar-link {% if url_name == 'my_complaints' %}active{% endif %}">
+      <i class="bi bi-chat-left-text"></i><span>Complaints</span>
+    </a>
+    <a href="{% url 'maintenance:my_requests' %}"
+       class="sidebar-link {% if url_name == 'my_requests' %}active{% endif %}">
+      <i class="bi bi-tools"></i><span>Maintenance</span>
+    </a>
+    {% endif %}
+
+    {% if user.role != 'TENANT' %}
+    <div class="nav-label">Analytics</div>
+    <a href="{% url 'dashboard:reports' %}"
+       class="sidebar-link {% if url_name == 'reports' %}active{% endif %}">
+      <i class="bi bi-bar-chart-line"></i><span>Reports</span>
+    </a>
+    {% endif %}
+
+    <div class="nav-label">Account</div>
+    <a href="{% url 'accounts:change_password' %}"
+       class="sidebar-link {% if url_name == 'change_password' %}active{% endif %}">
+      <i class="bi bi-key"></i><span>Change Password</span>
+    </a>
+    <a href="{% url 'accounts:change_email' %}"
+       class="sidebar-link {% if url_name == 'change_email' %}active{% endif %}">
+      <i class="bi bi-envelope"></i><span>Change Email</span>
+    </a>
+    <form method="post"
+          action="{% url 'accounts:logout' %}"
+          class="mx-2 mt-1 mb-4">
+      {% csrf_token %}
+      <button type="submit" class="sidebar-link"
+              style="color:rgba(255,100,100,.85);">
+        <i class="bi bi-box-arrow-left"></i>
+        <span>Logout</span>
+      </button>
+    </form>
+
+    {% endwith %}
+  </div>
+
+  <div id="scroll-indicator">
+    <i class="bi bi-chevron-double-down text-white"
+       style="font-size:14px;opacity:.75;
+              animation:bounce 1.5s infinite;"></i>
+  </div>
+</nav>

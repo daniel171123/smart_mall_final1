@@ -1,0 +1,104 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}My Dashboard{% endblock %}
+{% block page_title %}My Dashboard{% endblock %}
+{% block dashboard_content %}
+{% if not lease %}
+<div class="alert alert-warning"><i class="bi bi-info-circle me-2"></i>You do not have an active lease yet. Please contact mall management.</div>
+{% else %}
+<div class="card border-0 shadow-sm rounded-3 mb-4" style="background:linear-gradient(135deg,#1a3c5e 0%,#14304d 100%);">
+  <div class="card-body text-white p-4">
+    <div class="row align-items-center">
+      <div class="col">
+        <div class="small opacity-75 mb-1">Active Lease</div>
+        <h5 class="mb-1 fw-bold">{{ tenant.business_name }}</h5>
+        <div class="small opacity-75">Shop {{ lease.shop.shop_number }} - {{ lease.shop.mall.name }}</div>
+      </div>
+      <div class="col-auto text-end">
+        <div class="small opacity-75">Lease Ends</div>
+        <div class="fw-bold">{{ lease.end_date }}</div>
+        {% if lease.is_expiring_soon %}<span class="badge bg-warning text-dark mt-1">Expiring Soon</span>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <a href="{% url 'invoices:my_invoices' %}" class="metric-card">
+      <div class="icon-box mb-2" style="background:#fde8e8;"><i class="bi bi-receipt-cutoff" style="color:#dc3545;"></i></div>
+      <div class="value text-danger">{{ unpaid_count }}</div><div class="label">Unpaid Invoices</div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="metric-card">
+      <div class="icon-box mb-2" style="background:#fde8e8;"><i class="bi bi-cash" style="color:#dc3545;"></i></div>
+      <div class="value text-danger" style="font-size:18px;">ETB {{ total_due }}</div><div class="label">Total Outstanding</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="metric-card">
+      <div class="icon-box mb-2" style="background:#e8f0fe;"><i class="bi bi-calendar-check" style="color:#1a3c5e;"></i></div>
+      <div class="value">{{ lease.days_until_expiry }}</div><div class="label">Days Left on Lease</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <a href="{% url 'complaints:my_complaints' %}" class="metric-card">
+      <div class="icon-box mb-2" style="background:#f3e5f5;"><i class="bi bi-chat-left-text" style="color:#9c27b0;"></i></div>
+      <div class="value">{{ open_complaints }}</div><div class="label">Open Complaints</div>
+    </a>
+  </div>
+</div>
+<div class="row g-3">
+  <div class="col-12 col-lg-7">
+    <div class="table-card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-receipt me-2"></i>Recent Invoices</span>
+        <a href="{% url 'invoices:my_invoices' %}" class="btn btn-sm btn-outline-primary">View All</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>Invoice #</th><th>Period</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {% for inv in recent_invoices %}
+            <tr>
+              <td class="fw-semibold">{{ inv.invoice_number }}</td>
+              <td class="small text-muted">{{ inv.period_start|date:"M Y" }}</td>
+              <td>ETB {{ inv.total_amount }}</td>
+              <td><span class="badge badge-{{ inv.status|lower }}">{{ inv.status }}</span></td>
+              <td>{% if inv.status != 'PAID' %}<a href="{% url 'payments:submit_payment' inv.pk %}" class="btn btn-sm btn-primary">Pay</a>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-4">No invoices yet</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-5">
+    <div class="table-card">
+      <div class="card-header"><i class="bi bi-cash-stack me-2"></i>Recent Payments</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>Invoice</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for pay in recent_payments %}
+            <tr>
+              <td>{{ pay.invoice.invoice_number }}</td>
+              <td>ETB {{ pay.amount_paid }}</td>
+              <td>
+                {% if pay.status == 'VERIFIED' %}<span class="badge badge-paid">Verified</span>
+                {% elif pay.status == 'PENDING_VERIFICATION' %}<span class="badge badge-unpaid">Pending</span>
+                {% else %}<span class="badge badge-overdue">Rejected</span>{% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-muted py-4">No payments yet</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

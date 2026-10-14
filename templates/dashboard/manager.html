@@ -1,0 +1,89 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}Manager Dashboard{% endblock %}
+{% block page_title %}Manager Dashboard{% endblock %}
+{% block dashboard_content %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4 col-lg-2">
+    <a href="{% url 'tenants:tenant_list' %}" class="metric-card">
+      <div class="icon-box mb-2" style="background:#e8f0fe;"><i class="bi bi-person-badge" style="color:#1a3c5e;"></i></div>
+      <div class="value">{{ total_tenants }}</div><div class="label">Tenants</div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-lg-2">
+    <a href="{% url 'leases:lease_list' %}" class="metric-card">
+      <div class="icon-box mb-2" style="background:#e8f5e9;"><i class="bi bi-file-text" style="color:#28a745;"></i></div>
+      <div class="value">{{ active_leases }}</div><div class="label">Active Leases</div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-lg-2">
+    <a href="{% url 'leases:lease_list' %}" class="metric-card">
+      <div class="icon-box mb-2" style="background:#fff8e1;"><i class="bi bi-calendar-x" style="color:#f0a500;"></i></div>
+      <div class="value text-warning">{{ expiring_leases }}</div><div class="label">Expiring Soon</div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-lg-2">
+    <a href="{% url 'invoices:invoice_list' %}" class="metric-card">
+      <div class="icon-box mb-2" style="background:#fde8e8;"><i class="bi bi-exclamation-circle" style="color:#dc3545;"></i></div>
+      <div class="value text-danger">{{ overdue_invoices }}</div><div class="label">Overdue</div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-lg-2">
+    <a href="{% url 'payments:payment_list' %}" class="metric-card">
+      <div class="icon-box mb-2" style="background:#fff3e0;"><i class="bi bi-clock" style="color:#f0a500;"></i></div>
+      <div class="value text-warning">{{ pending_payments }}</div><div class="label">Pending Pay</div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-lg-2">
+    <a href="{% url 'complaints:complaint_list' %}" class="metric-card">
+      <div class="icon-box mb-2" style="background:#f3e5f5;"><i class="bi bi-chat-left-text" style="color:#9c27b0;"></i></div>
+      <div class="value">{{ open_complaints }}</div><div class="label">Open Complaints</div>
+    </a>
+  </div>
+</div>
+<div class="row g-3">
+  <div class="col-12 col-lg-6">
+    <div class="table-card">
+      <div class="card-header"><i class="bi bi-file-text me-2"></i>Recent Leases</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>Tenant</th><th>Shop</th><th>Rent/Mo</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for lease in recent_leases %}
+            <tr>
+              <td><a href="{% url 'leases:lease_detail' lease.pk %}">{{ lease.tenant.business_name }}</a></td>
+              <td>Shop {{ lease.shop.shop_number }}</td>
+              <td>ETB {{ lease.monthly_rent }}</td>
+              <td><span class="badge badge-{{ lease.status|lower }}">{{ lease.status }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-muted py-4">No leases yet</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-6">
+    <div class="table-card">
+      <div class="card-header text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Overdue Invoices</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>Tenant</th><th>Invoice</th><th>Total Due</th><th>Days Late</th></tr></thead>
+          <tbody>
+            {% for inv in overdue_list %}
+            <tr>
+              <td>{{ inv.lease.tenant.business_name }}</td>
+              <td><a href="{% url 'invoices:invoice_detail' inv.pk %}">{{ inv.invoice_number }}</a></td>
+              <td class="text-danger fw-bold">ETB {{ inv.total_amount }}</td>
+              <td><span class="badge bg-danger">{{ inv.get_days_overdue }} days</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-muted py-4">No overdue invoices</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

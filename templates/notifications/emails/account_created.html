@@ -1,0 +1,32 @@
+{% extends 'notifications/emails/base_email.html' %}
+{% block email_body %}
+<p class="greeting">
+    Dear <strong>{{ user.get_full_name }}</strong>,
+</p>
+<p>Welcome to the Smart Mall Rental Management System.
+   Your tenant account has been created by mall management.
+</p>
+
+<div class="breakdown-box">
+    <h4>🔐 Your Login Credentials</h4>
+    <div class="breakdown-row">
+        <span>Email</span>
+        <span>{{ user.email }}</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Temporary Password</span>
+        <span><strong>{{ raw_password }}</strong></span>
+    </div>
+</div>
+
+<div class="alert-box alert-warning">
+    ⚠️ For security, you will be required to change
+    your password when you first log in.
+</div>
+
+<p>You can log in at:
+   <a href="http://{{ login_url }}">
+       http://{{ login_url }}
+   </a>
+</p>
+{% endblock %}

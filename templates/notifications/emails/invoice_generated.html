@@ -1,0 +1,48 @@
+{% extends 'notifications/emails/base_email.html' %}
+{% block email_body %}
+<p class="greeting">
+    Dear <strong>{{ tenant.user.get_full_name }}</strong>,
+</p>
+<p>A new invoice has been generated for your shop at
+   <strong>{{ mall.name }}</strong>.
+   Please review the details below and make payment
+   before the due date to avoid penalties.</p>
+
+<div class="breakdown-box">
+    <h4>📄 Invoice Breakdown — {{ invoice.invoice_number }}</h4>
+    <div class="breakdown-row">
+        <span>Shop</span>
+        <span>Shop {{ shop.shop_number }}, {{ shop.floor }} Floor</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Period</span>
+        <span>{{ period_start }} to {{ period_end }}</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Base Rent (3 months)</span>
+        <span>ETB {{ base_rent }}</span>
+    </div>
+    <div class="breakdown-row">
+        <span>Maintenance Fee</span>
+        <span>ETB {{ maintenance_fee }}</span>
+    </div>
+    {% if other_charges > 0 %}
+    <div class="breakdown-row">
+        <span>Other Charges</span>
+        <span>ETB {{ other_charges }}</span>
+    </div>
+    {% endif %}
+    <div class="breakdown-row total">
+        <span>Total Amount Due</span>
+        <span>ETB {{ total_amount }}</span>
+    </div>
+</div>
+
+<div class="alert-box alert-warning">
+    ⚠️ Payment is due by <strong>{{ due_date }}</strong>.
+    A penalty of 1% of monthly rent per day will be
+    applied after this date.
+</div>
+
+<p>Log in to your tenant portal to upload payment proof.</p>
+{% endblock %}

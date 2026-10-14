@@ -1,0 +1,17 @@
+<div class="toast-container">
+{% for message in messages %}
+<div class="toast show align-items-center text-white border-0
+  {% if message.tags == 'success' %}bg-success
+  {% elif message.tags == 'error' %}bg-danger
+  {% elif message.tags == 'warning' %}bg-warning text-dark
+  {% else %}bg-info{% endif %}"
+  role="alert">
+  <div class="d-flex">
+    <div class="toast-body">{{ message }}</div>
+    <button type="button"
+            class="btn-close btn-close-white me-2 m-auto"
+            data-bs-dismiss="toast"></button>
+  </div>
+</div>
+{% endfor %}
+</div>

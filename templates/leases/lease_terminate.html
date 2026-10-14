@@ -1,0 +1,32 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}Terminate Lease{% endblock %}
+{% block page_title %}Terminate Lease{% endblock %}
+{% block dashboard_content %}
+<div class="row justify-content-center"><div class="col-12 col-lg-6">
+<div class="table-card border-danger" style="border:2px solid #dc3545;">
+<div class="card-header text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Terminate Lease</div>
+<div class="card-body p-4">
+<div class="alert alert-danger">
+  <strong>Warning:</strong> Terminating this lease will:<br>
+  &bull; Mark the lease as TERMINATED<br>
+  &bull; Mark Shop {{ lease.shop.shop_number }} as VACANT<br>
+  &bull; This action cannot be undone.
+</div>
+<p><strong>Tenant:</strong> {{ lease.tenant.business_name }}</p>
+<p><strong>Shop:</strong> {{ lease.shop.shop_number }} — {{ lease.shop.mall.name }}</p>
+<form method="post" novalidate>{% csrf_token %}
+{% for field in form %}
+<div class="mb-3">
+  <label class="form-label fw-semibold">{{ field.label }}</label>
+  {{ field }}
+  {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors.0 }}</div>{% endif %}
+</div>
+{% endfor %}
+<div class="d-flex gap-2 mt-4">
+  <button type="submit" class="btn btn-danger"><i class="bi bi-x-circle me-2"></i>Confirm Termination</button>
+  <a href="{% url 'leases:lease_detail' lease.pk %}" class="btn btn-outline-secondary">Cancel</a>
+</div>
+</form>
+</div></div>
+</div></div>
+{% endblock %}

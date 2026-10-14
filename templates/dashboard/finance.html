@@ -1,0 +1,53 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}Finance Dashboard{% endblock %}
+{% block page_title %}Finance Dashboard{% endblock %}
+{% block dashboard_content %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <a href="{% url 'payments:payment_list' %}" class="metric-card">
+      <div class="icon-box mb-2" style="background:#fff8e1;"><i class="bi bi-hourglass-split" style="color:#f0a500;"></i></div>
+      <div class="value text-warning">{{ pending_payments }}</div><div class="label">Awaiting Verification</div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="metric-card">
+      <div class="icon-box mb-2" style="background:#e8f5e9;"><i class="bi bi-check-circle" style="color:#28a745;"></i></div>
+      <div class="value text-success">{{ verified_today }}</div><div class="label">Verified Today</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="metric-card">
+      <div class="icon-box mb-2" style="background:#e8f0fe;"><i class="bi bi-cash-stack" style="color:#1a3c5e;"></i></div>
+      <div class="value" style="font-size:20px;">ETB {{ total_collected }}</div><div class="label">Total Collected</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <a href="{% url 'invoices:invoice_list' %}" class="metric-card">
+      <div class="icon-box mb-2" style="background:#fde8e8;"><i class="bi bi-exclamation-triangle" style="color:#dc3545;"></i></div>
+      <div class="value text-danger">{{ overdue_invoices }}</div><div class="label">Overdue Invoices</div>
+    </a>
+  </div>
+</div>
+<div class="table-card">
+  <div class="card-header"><i class="bi bi-hourglass-split me-2"></i>Payments Awaiting Verification</div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Tenant</th><th>Invoice</th><th>Amount</th><th>Method</th><th>Submitted</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for pay in pending_list %}
+        <tr>
+          <td>{{ pay.tenant.business_name }}</td>
+          <td>{{ pay.invoice.invoice_number }}</td>
+          <td class="fw-bold">ETB {{ pay.amount_paid }}</td>
+          <td>{{ pay.get_payment_method_display }}</td>
+          <td>{{ pay.submitted_at|date:"M d, Y" }}</td>
+          <td><a href="{% url 'payments:verify_payment' pay.pk %}" class="btn btn-sm btn-primary">Review</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No pending payments</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base_authenticated.html' %}
+{% block title %}Complaints{% endblock %}
+{% block page_title %}Complaints{% endblock %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <select class="form-select form-select-sm" style="width:auto;" onchange="window.location.href='?status='+this.value">
+    <option value="">All</option>
+    <option value="OPEN" {% if selected_status == 'OPEN' %}selected{% endif %}>Open</option>
+    <option value="IN_PROGRESS" {% if selected_status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+    <option value="RESOLVED" {% if selected_status == 'RESOLVED' %}selected{% endif %}>Resolved</option>
+  </select>
+</div>
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Subject</th><th>Tenant</th><th>Type</th><th>Status</th><th>Assigned To</th><th>Date</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for c in complaints %}
+        <tr>
+          <td><a href="{% url 'complaints:complaint_detail' c.pk %}">{{ c.subject }}</a></td>
+          <td>{{ c.tenant.business_name }}</td>
+          <td>{{ c.get_complaint_type_display }}</td>
+          <td><span class="badge {% if c.status == 'OPEN' %}bg-danger{% elif c.status == 'IN_PROGRESS' %}bg-warning text-dark{% else %}bg-success{% endif %}">{{ c.status }}</span></td>
+          <td>{{ c.assigned_to.get_full_name|default:"—" }}</td>
+          <td>{{ c.created_at|date:"M d, Y" }}</td>
+          <td><a href="{% url 'complaints:complaint_detail' c.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No complaints.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
